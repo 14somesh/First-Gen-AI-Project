@@ -7,6 +7,7 @@ Run from the project root so package imports resolve:
 from __future__ import annotations
 
 import sys
+import textwrap
 from pathlib import Path
 
 # Project root (parent of streamlit_app/)
@@ -115,27 +116,62 @@ def main() -> None:
             st.info("No restaurants available for the selected filters.")
             return
 
-        st.subheader("Recommendations")
-        st.caption("Sorted by relevance")
+        # Premium CSS styling for results injected directly
+        css = textwrap.dedent("""
+        <style>
+        .premium-card {
+            background: linear-gradient(145deg, #1e293b, #0f172a);
+            border: 1px solid rgba(148, 163, 184, 0.15);
+            border-radius: 16px;
+            padding: 24px;
+            margin-bottom: 20px;
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.4), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+            transition: transform 0.2s ease, border-color 0.2s ease;
+        }
+        .premium-card:hover {
+            transform: translateY(-2px);
+            border-color: rgba(56, 189, 248, 0.5);
+        }
+        .card-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 16px; }
+        .card-title { color: #f8fafc; font-size: 1.35rem; font-weight: 700; margin: 0 0 4px 0; letter-spacing: -0.025em; }
+        .card-subtitle { color: #94a3b8; font-size: 0.9rem; margin: 0; }
+        .rating-badge { background: linear-gradient(135deg, #22c55e, #16a34a); color: #ffffff; padding: 4px 12px; border-radius: 9999px; font-weight: 600; font-size: 0.85rem; box-shadow: 0 4px 6px -1px rgba(22, 163, 74, 0.2); white-space: nowrap; }
+        .chip-container { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 16px; }
+        .chip { background: rgba(30, 41, 59, 0.8); border: 1px solid rgba(148, 163, 184, 0.2); color: #f1f5f9; padding: 4px 12px; border-radius: 9999px; font-size: 0.75rem; font-weight: 500; }
+        .chip-price { background: rgba(56, 189, 248, 0.1); border-color: rgba(56, 189, 248, 0.3); color: #7dd3fc; }
+        </style>
+        """)
+        st.markdown(css, unsafe_allow_html=True)
+
+        st.divider() # clean separation between form and results
+        st.markdown("### Recommendations")
+        st.caption("Sorted by relevance matching your preferences")
 
         for r in recs:
-            with st.container(border=True):
-                col1, col2 = st.columns([5, 1])
-                
-                location_text = r.location or "Location not specified"
-                with col1:
-                    st.markdown(f"**{r.name}**")
-                    st.caption(location_text)
-                    
-                with col2:
-                    rating_text = f"{r.rating:.1f} ★" if r.rating is not None else "No rating"
-                    st.markdown(f"**{rating_text}**")
-                
-                cuisine_text = r.cuisines or "Various cuisines"
-                price_text = r.price_bucket or "N/A"
-                votes_text = f"{r.votes} votes" if r.votes is not None else "New or unrated"
-                
-                st.markdown(f"`{cuisine_text}` &nbsp; `Price: {price_text}` &nbsp; `{votes_text}`")
+            rating_text = f"{r.rating:.1f} ★" if r.rating is not None else "No rating"
+            votes_text = f"{r.votes} votes" if r.votes is not None else "New or unrated"
+            cuisine_text = r.cuisines or "Various cuisines"
+            price_text = r.price_bucket.title() if r.price_bucket else "N/A"
+            location_text = r.location or "Location not specified"
+
+            # Using textwrap.dedent guarantees 0 leading spaces, entirely preventing the markdown code-block bug
+            card_html = textwrap.dedent(f"""
+            <div class="premium-card">
+                <div class="card-header">
+                    <div>
+                        <h3 class="card-title">{r.name}</h3>
+                        <p class="card-subtitle">{location_text}</p>
+                    </div>
+                    <div class="rating-badge">{rating_text}</div>
+                </div>
+                <div class="chip-container">
+                    <span class="chip">{cuisine_text}</span>
+                    <span class="chip chip-price">Price: {price_text}</span>
+                    <span class="chip">{votes_text}</span>
+                </div>
+            </div>
+            """)
+            st.markdown(card_html, unsafe_allow_html=True)
 
 
 if __name__ == "__main__":
