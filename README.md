@@ -1,26 +1,14 @@
 ## AI Restaurant Recommendation Service
 
-This project implements an AI-powered restaurant recommendation service based on a Zomato dataset hosted on Hugging Face.
+An AI-powered service utilizing Hugging Face datasets and Groq LLMs to provide intelligent, ranked restaurant recommendations based on natural language preferences.
 
-At this stage, **Phase 1 (Data Ingestion)** is implemented:
-- Loads the `ManikaSaini/zomato-restaurant-recommendation` dataset from Hugging Face.
-- Maps raw records into a simple internal restaurant model.
-- Applies lightweight validation.
+**Core Stack:**
+- **Backend:** FastAPI, SQLite, Recommendation Engine
+- **Frontend:** Streamlit (`streamlit_app/app.py`)
 
 ### Getting Started
 
-1. **Create and activate a virtual environment** (recommended).
-2. **Install dependencies**:
-
-```bash
-pip install -r requirements.txt
-```
-
-3. **Run tests**:
-
-```bash
-pytest
-```
-
-This will run the Phase 1 ingestion test, which loads a small sample from the dataset and validates that ingestion works end-to-end.
-
+1. **Install dependencies**: `pip install -r requirements.txt`
+2. **Configure Variables**: Add required API keys (e.g., `GROQ_API_KEY`) to an `.env` file.
+3. **Run tests**: `pytest`
+4. **Launch Application**: Execute `.\run_local.bat` to concurrently start the Streamlit UI (port 8501) and FastAPI server (port 8000).

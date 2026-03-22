@@ -56,8 +56,8 @@ def _run_recommendations(
 
 def main() -> None:
     st.set_page_config(page_title="AI Restaurant Recommendations", layout="centered")
-    st.markdown("## AI Restaurant Recommendation")
-    st.markdown("<p style='font-size: 13px; color: #9ca3af; margin-top: -10px; margin-bottom: 20px;'>Select a place and filters to discover where to eat.</p>", unsafe_allow_html=True)
+    st.markdown("<h2 style='font-weight: 600; margin-bottom: 0;'>AI Restaurant Recommendation</h2>", unsafe_allow_html=True)
+    st.markdown("<p style='font-size: 13px; color: #9ca3af; margin-top: 5px; margin-bottom: 20px;'>Select a place and filters to discover where to eat.</p>", unsafe_allow_html=True)
 
     db_path = ensure_db_populated()
     locations = list_locations().locations
