@@ -64,36 +64,59 @@ def main() -> None:
     cuisines = list_cuisines().cuisines
 
     place_options = [""] + locations
-    place = st.selectbox(
-        "Place",
-        options=place_options,
-        format_func=lambda x: "Select a place" if x == "" else x,
-    )
-
     cuisine_options = [""] + cuisines
-    cuisine = st.selectbox(
-        "Cuisines",
-        options=cuisine_options,
-        format_func=lambda x: "Select a cuisine" if x == "" else x,
-    )
 
-    price_choice = st.selectbox(
-        "Price Range (optional)",
-        options=["Any", "low", "medium", "high"],
-    )
-    price_range = None if price_choice == "Any" else price_choice
+    # Subtle premium CSS targeting the inputs and the primary submit button
+    form_css = textwrap.dedent("""
+    <style>
+    div[data-baseweb="select"] > div { background-color: rgba(15, 23, 42, 0.3) !important; border-radius: 12px; border: 1px solid rgba(148, 163, 184, 0.15) !important; }
+    div[data-baseweb="input"] { background-color: rgba(15, 23, 42, 0.3) !important; border-radius: 12px; border: 1px solid rgba(148, 163, 184, 0.15) !important; }
+    button[data-testid="baseButton-primary"] { border-radius: 12px !important; font-weight: 600 !important; background: linear-gradient(135deg, #2563eb, #1d4ed8) !important; border: none !important; box-shadow: 0 4px 10px rgba(37, 99, 235, 0.3) !important; transition: transform 0.2s ease, box-shadow 0.2s ease !important; }
+    button[data-testid="baseButton-primary"]:hover { transform: translateY(-1px) !important; box-shadow: 0 6px 15px rgba(37, 99, 235, 0.4) !important; background: linear-gradient(135deg, #3b82f6, #2563eb) !important; }
+    </style>
+    """)
+    st.markdown(form_css, unsafe_allow_html=True)
 
-    min_rating_raw = st.text_input("Minimum rating (optional)", placeholder="e.g. 4.0")
-    min_rating: float | None = None
-    if min_rating_raw.strip():
-        try:
-            min_rating = float(min_rating_raw.strip())
-        except ValueError:
-            st.warning("Minimum rating must be a number.")
+    with st.container(border=True):
+        st.markdown("<h4 style='margin-bottom: 4px; color: #f8fafc;'>Search Filters</h4>", unsafe_allow_html=True)
+        st.markdown("<p style='font-size: 13px; color: #94a3b8; margin-top: 0; margin-bottom: 16px;'>Configure exactly what you are looking for.</p>", unsafe_allow_html=True)
 
-    limit = 10  # Hardcoded to 10 to match original UI behavior
+        col1, col2 = st.columns(2)
+        with col1:
+            place = st.selectbox(
+                "Place",
+                options=place_options,
+                format_func=lambda x: "Select a place" if x == "" else x,
+            )
+        with col2:
+            cuisine = st.selectbox(
+                "Cuisines",
+                options=cuisine_options,
+                format_func=lambda x: "Select a cuisine" if x == "" else x,
+            )
 
-    if st.button("Get recommendations", type="primary"):
+        col3, col4 = st.columns(2)
+        with col3:
+            price_choice = st.selectbox(
+                "Price Range (optional)",
+                options=["Any", "low", "medium", "high"],
+            )
+            price_range = None if price_choice == "Any" else price_choice
+        with col4:
+            min_rating_raw = st.text_input("Minimum rating (optional)", placeholder="e.g. 4.0")
+            min_rating: float | None = None
+            if min_rating_raw.strip():
+                try:
+                    min_rating = float(min_rating_raw.strip())
+                except ValueError:
+                    st.warning("Minimum rating must be a number.")
+
+        limit = 10  # Hardcoded to 10 to match original UI behavior
+
+        st.markdown("<div style='margin-top: 8px;'></div>", unsafe_allow_html=True)
+        submitted = st.button("Get recommendations", type="primary", use_container_width=True)
+
+    if submitted:
         if not place or not cuisine:
             st.error("Please select both a place and a cuisine.")
             return
