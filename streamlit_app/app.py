@@ -55,13 +55,12 @@ def _run_recommendations(
 
 def main() -> None:
     st.set_page_config(page_title="AI Restaurant Recommendations", layout="centered")
-    st.title("AI Restaurant Recommendation")
+    st.markdown("## AI Restaurant Recommendation")
+    st.markdown("<p style='font-size: 13px; color: #9ca3af; margin-top: -10px; margin-bottom: 20px;'>Select a place and filters to discover where to eat.</p>", unsafe_allow_html=True)
 
     db_path = ensure_db_populated()
     locations = list_locations().locations
     cuisines = list_cuisines().cuisines
-
-    st.caption(f"Database: `{db_path}`")
 
     place_options = [""] + locations
     place = st.selectbox(
@@ -91,7 +90,7 @@ def main() -> None:
         except ValueError:
             st.warning("Minimum rating must be a number.")
 
-    limit = st.slider("Max results", min_value=1, max_value=25, value=10)
+    limit = 10  # Hardcoded to 10 to match original UI behavior
 
     if st.button("Get recommendations", type="primary"):
         if not place or not cuisine:
@@ -116,19 +115,54 @@ def main() -> None:
             st.info("No restaurants available for the selected filters.")
             return
 
-        rows = [
-            {
-                "Name": r.name,
-                "Location": r.location,
-                "Cuisines": r.cuisines,
-                "Price": r.price_bucket,
-                "Rating": r.rating,
-                "Votes": r.votes,
-                "Score": round(r.score, 2),
-            }
-            for r in recs
-        ]
-        st.dataframe(rows, use_container_width=True, hide_index=True)
+        css = """
+        <style>
+        .results-section { border-top: 1px solid rgba(148,163,184,0.35); padding-top: 14px; display: flex; flex-direction: column; gap: 10px; font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
+        .results-header { display: flex; justify-content: space-between; align-items: center; font-size: 12px; color: #9ca3af; }
+        .results-title { font-weight: 600; color: #e5e7eb; }
+        .results-list { display: flex; flex-direction: column; gap: 8px; max-height: 500px; overflow-y: auto; padding-right: 2px; margin-bottom: 20px; }
+        .result-card { border-radius: 14px; border: 1px solid rgba(148,163,184,0.3); background: rgba(15,23,42,0.96); padding: 10px 12px; display: flex; flex-direction: column; gap: 4px; }
+        .result-header-row { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+        .result-name { font-size: 14px; font-weight: 600; color: #f9fafb; margin: 0; }
+        .result-location { font-size: 12px; color: #9ca3af; margin: 0; }
+        .badge { font-size: 11px; padding: 3px 7px; border-radius: 999px; background: rgba(22,163,74,0.1); color: #bbf7d0; border: 1px solid rgba(34,197,94,0.7); white-space: nowrap; }
+        .chips { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 2px; }
+        .chip { font-size: 11px; padding: 3px 7px; border-radius: 999px; border: 1px solid rgba(148,163,184,0.5); background: rgba(17,24,39,0.95); color: #e5e7eb; }
+        </style>
+        """
+
+        html_blocks = [css, '<div class="results-section">']
+        html_blocks.append('<div class="results-header"><span class="results-title">Recommendations</span><span>Sorted by relevance</span></div>')
+        html_blocks.append('<div class="results-list">')
+
+        for r in recs:
+            rating_text = f"{r.rating:.1f} ★" if r.rating is not None else "No rating"
+            votes_text = f"{r.votes} votes" if r.votes is not None else "New or unrated"
+            cuisine_text = r.cuisines or "Various cuisines"
+            price_text = r.price_bucket or "N/A"
+            location_text = r.location or "Location not specified"
+
+            card_html = f"""
+            <article class="result-card">
+                <div class="result-header-row">
+                    <div>
+                        <div class="result-name">{r.name}</div>
+                        <div class="result-location">{location_text}</div>
+                    </div>
+                    <span class="badge">{rating_text}</span>
+                </div>
+                <div class="chips">
+                    <span class="chip">{cuisine_text}</span>
+                    <span class="chip">Price: {price_text}</span>
+                    <span class="chip">{votes_text}</span>
+                </div>
+            </article>
+            """
+            html_blocks.append(card_html)
+        
+        html_blocks.append('</div></div>')
+        
+        st.markdown("".join(html_blocks), unsafe_allow_html=True)
 
 
 if __name__ == "__main__":
