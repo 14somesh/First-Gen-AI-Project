@@ -115,54 +115,27 @@ def main() -> None:
             st.info("No restaurants available for the selected filters.")
             return
 
-        css = """
-        <style>
-        .results-section { border-top: 1px solid rgba(148,163,184,0.35); padding-top: 14px; display: flex; flex-direction: column; gap: 10px; font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
-        .results-header { display: flex; justify-content: space-between; align-items: center; font-size: 12px; color: #9ca3af; }
-        .results-title { font-weight: 600; color: #e5e7eb; }
-        .results-list { display: flex; flex-direction: column; gap: 8px; max-height: 500px; overflow-y: auto; padding-right: 2px; margin-bottom: 20px; }
-        .result-card { border-radius: 14px; border: 1px solid rgba(148,163,184,0.3); background: rgba(15,23,42,0.96); padding: 10px 12px; display: flex; flex-direction: column; gap: 4px; }
-        .result-header-row { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
-        .result-name { font-size: 14px; font-weight: 600; color: #f9fafb; margin: 0; }
-        .result-location { font-size: 12px; color: #9ca3af; margin: 0; }
-        .badge { font-size: 11px; padding: 3px 7px; border-radius: 999px; background: rgba(22,163,74,0.1); color: #bbf7d0; border: 1px solid rgba(34,197,94,0.7); white-space: nowrap; }
-        .chips { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 2px; }
-        .chip { font-size: 11px; padding: 3px 7px; border-radius: 999px; border: 1px solid rgba(148,163,184,0.5); background: rgba(17,24,39,0.95); color: #e5e7eb; }
-        </style>
-        """
-
-        html_blocks = [css, '<div class="results-section">']
-        html_blocks.append('<div class="results-header"><span class="results-title">Recommendations</span><span>Sorted by relevance</span></div>')
-        html_blocks.append('<div class="results-list">')
+        st.subheader("Recommendations")
+        st.caption("Sorted by relevance")
 
         for r in recs:
-            rating_text = f"{r.rating:.1f} ★" if r.rating is not None else "No rating"
-            votes_text = f"{r.votes} votes" if r.votes is not None else "New or unrated"
-            cuisine_text = r.cuisines or "Various cuisines"
-            price_text = r.price_bucket or "N/A"
-            location_text = r.location or "Location not specified"
-
-            card_html = f"""
-            <article class="result-card">
-                <div class="result-header-row">
-                    <div>
-                        <div class="result-name">{r.name}</div>
-                        <div class="result-location">{location_text}</div>
-                    </div>
-                    <span class="badge">{rating_text}</span>
-                </div>
-                <div class="chips">
-                    <span class="chip">{cuisine_text}</span>
-                    <span class="chip">Price: {price_text}</span>
-                    <span class="chip">{votes_text}</span>
-                </div>
-            </article>
-            """
-            html_blocks.append(card_html)
-        
-        html_blocks.append('</div></div>')
-        
-        st.markdown("".join(html_blocks), unsafe_allow_html=True)
+            with st.container(border=True):
+                col1, col2 = st.columns([5, 1])
+                
+                location_text = r.location or "Location not specified"
+                with col1:
+                    st.markdown(f"**{r.name}**")
+                    st.caption(location_text)
+                    
+                with col2:
+                    rating_text = f"{r.rating:.1f} ★" if r.rating is not None else "No rating"
+                    st.markdown(f"**{rating_text}**")
+                
+                cuisine_text = r.cuisines or "Various cuisines"
+                price_text = r.price_bucket or "N/A"
+                votes_text = f"{r.votes} votes" if r.votes is not None else "New or unrated"
+                
+                st.markdown(f"`{cuisine_text}` &nbsp; `Price: {price_text}` &nbsp; `{votes_text}`")
 
 
 if __name__ == "__main__":
