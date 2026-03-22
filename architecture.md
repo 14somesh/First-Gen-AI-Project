@@ -135,12 +135,16 @@ A service that ingests restaurant data from the Zomato-based Hugging Face datase
     - **Phase 4** (Recommendation Engine).
 - **Response Formatter**:
   - Returns structured recommendation payloads.
- - **Web UI Client (Restaurant Discovery Page)**:
-   - Single-page or multi-page web UI that allows users to:
+ - **Web UI Client (React Page via API)**:
+   - Single-page web UI that allows users to:
      - Enter natural-language queries and explicit filters (price, cuisine, rating, location).
      - View recommended restaurants in a list and/or map view.
      - See key attributes (name, cuisine, rating, price range) and short LLM-generated explanations.
    - Communicates exclusively with the API layer; contains no recommendation logic itself.
+ - **Streamlit Application (`streamlit_app/app.py`)**:
+   - Alternative, native-Python UI entrypoint providing a styled interactive dashboard.
+   - Directly imports and orchestrates Phase 3 (LLM) and Phase 4 (Recommendation Engine) modules.
+   - Bypasses the HTTP API Layer for direct, fast local execution while reusing the exact same core business logic.
 
 ### Data Flow
 1. Client sends request (`user_input`, `price_range`, `location`, `cuisine`, etc.) to API.
@@ -158,7 +162,7 @@ A service that ingests restaurant data from the Zomato-based Hugging Face datase
 
 ## High-Level System Diagram (Text)
 
-- **External Client**
+- **External Client / React UI**
   - → calls → **API Layer (HTTP Service / Gateway)**
     - → orchestrates → **LLM Integration**
       - → calls → **LLM Provider (external)**
@@ -167,6 +171,15 @@ A service that ingests restaurant data from the Zomato-based Hugging Face datase
       - → queries → **Primary Operational Store (DB)**
       - → queries → **Search/Vector Index**
       - ← returns ← Ranked Recommendations
+
+- **Streamlit Application (`streamlit_app/app.py`)**
+  - → directly orchestrates → **LLM Integration**
+    - → calls → **LLM Provider (external)**
+    - ← returns ← Interpreted Preferences (structured)
+  - → directly orchestrates → **Recommendation Engine**
+    - → queries → **Primary Operational Store (DB)**
+    - → queries → **Search/Vector Index**
+    - ← returns ← Ranked Recommendations
 - **Batch Flow (Offline)**
   - **Scheduler**
     - → triggers → **Data Ingestion**
